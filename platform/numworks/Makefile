@@ -27,7 +27,7 @@ LTO = 1
 # $(addprefix $(BUILD)/,$(addsuffix .o,$(basename $(1))))
 # endef
 
-CPPFLAGS = -std=c++11 -fno-exceptions
+CPPFLAGS = -std=gnu++17 -fno-exceptions
 CPPFLAGS += -Os -Wall
 CPPFLAGS += $(shell $(NWLINK) eadk-cflags-device)
 LDFLAGS = -Wl,--relocatable
