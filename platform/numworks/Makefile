@@ -1,7 +1,7 @@
 Q ?= @
 CC = arm-none-eabi-gcc
 CXX = arm-none-eabi-g++
-BUILD_DIR = target
+BUILD_DIR = build
 NWLINK = npx --yes -- nwlink@0.0.19
 LINK_GC = 1
 LTO = 1
@@ -50,17 +50,20 @@ $(BUILD_DIR)/fake08.nwa: $(call object_for,$(source)) $(BUILD_DIR)/icon.o
 	@echo "LD      $@"
 	$(Q) $(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
 
-$(addprefix $(BUILD_DIR)/,%.o): %.cpp | $(BUILD_DIR)
-	@echo "CXX     $^"
-	$(Q) $(CXX) $(CPPFLAGS) $(SFLAGS) -c $^ -o $@
+$(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)/source
+	@echo "CXX     $<"
+	$(Q) $(CXX) $(CPPFLAGS) $(SFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/icon.o: source/icon.png
 	@echo "ICON    $<"
 	$(Q) $(NWLINK) png-icon-o $< $@
 
 .PRECIOUS: $(BUILD_DIR)
+$(BUILD_DIR)/source:
+	mkdir -p $@
+
 $(BUILD_DIR):
-	$(Q) mkdir -p $@/source
+	mkdir -p $@
 
 .PHONY: clean
 clean:
