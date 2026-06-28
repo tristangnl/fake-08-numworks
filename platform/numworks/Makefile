@@ -15,15 +15,15 @@ INCLUDES	:=	${INCLUDES}
 #---------------------------------------------------------------------------------
 
 Q ?= @
-CC := arm-none-eabi-gcc
 CXX := arm-none-eabi-g++
+CC = $(CXX)
 NWLINK := npx --yes -- nwlink@0.0.19
 LINK_GC := 1
 LTO := 1
 
 COMMON_FLAGS := $(shell $(NWLINK) eadk-cflags-device)
 COMMON_FLAGS += -Os -Wall
-COMMON_FLAGS += -D_NUMWORKS
+COMMON_FLAGS += -D_NUMWORKS -DMINIZ_NO_TIME
 
 LDFLAGS := -Wl,--relocatable
 LDFLAGS += -nostartfiles
@@ -44,7 +44,6 @@ endif
 
 CPPFLAGS := $(INCLUDE)
 
-CFLAGS := -std=c99
 CFLAGS += -ggdb
 CFLAGS += $(COMMON_FLAGS)
 
