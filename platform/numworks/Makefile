@@ -47,7 +47,7 @@ CFLAGS := -std=c99
 CFLAGS += -ggdb
 CFLAGS += $(COMMON_FLAGS)
 
-CXXFLAGS := -std=gnu++17 -fno-exceptions 
+CXXFLAGS := -std=gnu++17 -fno-exceptions -fno-rtti
 CXXFLAGS += $(COMMON_FLAGS)
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
