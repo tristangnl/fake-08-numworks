@@ -10,43 +10,45 @@ BUILD		:=	build
 SOURCES		:=	${SOURCES} source
 INCLUDES	:=	${INCLUDES}
 
-# DATA		:=	data
-
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 
 Q ?= @
-CC = arm-none-eabi-gcc
-CXX = arm-none-eabi-g++
-NWLINK = npx --yes -- nwlink@0.0.19
-LINK_GC = 1
-LTO = 1
+CC := arm-none-eabi-gcc
+CXX := arm-none-eabi-g++
+NWLINK := npx --yes -- nwlink@0.0.19
+LINK_GC := 1
+LTO := 1
 
-# define object_for
-# $(addprefix $(BUILD)/,$(addsuffix .o,$(basename $(1))))
-# endef
+COMMON_FLAGS := $(shell $(NWLINK) eadk-cflags-device)
+COMMON_FLAGS += -Os -Wall
 
-CPPFLAGS = -std=gnu++17 -fno-exceptions
-CPPFLAGS += -Os -Wall
-CPPFLAGS += $(shell $(NWLINK) eadk-cflags-device)
-LDFLAGS = -Wl,--relocatable
+LDFLAGS := -Wl,--relocatable
 LDFLAGS += -nostartfiles
 LDFLAGS += --specs=nano.specs
 
 ifeq ($(LINK_GC),1)
-CPPFLAGS += -fdata-sections -ffunction-sections
+COMMON_FLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -Wl,-e,main -Wl,-u,eadk_app_name -Wl,-u,eadk_app_icon -Wl,-u,eadk_api_level
 LDFLAGS += -Wl,--gc-sections
 endif
 
 ifeq ($(LTO),1)
-CPPFLAGS += -flto -fno-fat-lto-objects
-CPPFLAGS += -fwhole-program
-CPPFLAGS += -fvisibility=internal
+COMMON_FLAGS += -flto -fno-fat-lto-objects
+COMMON_FLAGS += -fwhole-program
+COMMON_FLAGS += -fvisibility=internal
 LDFLAGS += -flinker-output=nolto-rel
 endif
 
+CPPFLAGS := $(INCLUDE)
+
+CFLAGS := -std=c99
+CFLAGS += -ggdb
+CFLAGS += $(COMMON_FLAGS)
+
+CXXFLAGS := -std=gnu++17 -fno-exceptions 
+CXXFLAGS += $(COMMON_FLAGS)
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
@@ -76,10 +78,6 @@ else
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
-
-
-#pas sur d'avoir capté
-
 
 export OFILES_SOURCES 	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) #$(SFILES:.s=.o)
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
@@ -127,11 +125,17 @@ build: $(TARGET).bin
 
 $(TARGET).nwa: $(OFILES_SOURCES) icon.o
 	@echo "LD      $@"
-	$(Q) $(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+	$(Q) $(LD) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+# 	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS)
+# 	$(Q) $(CC) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS)
 
 %.o: %.cpp
 	@echo "CXX     $<"
-	$(Q) $(CXX) $(CPPFLAGS) $(SFLAGS) -c $< -o $@
+	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+%.o: %.c
+	@echo "CC      $^"
+	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 icon.o: source/icon.png
 	@echo "ICON    $<"
@@ -140,5 +144,3 @@ icon.o: source/icon.png
 #---------------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------------
-
-
