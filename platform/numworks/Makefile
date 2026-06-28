@@ -96,18 +96,12 @@ clean:
 	$(Q) echo "CLEAN"
 	$(Q) rm -fr $(BUILD) $(TARGET).nwa
 #---------------------------------------------------------------------------------
-#run:
+run: $(TARGET).nwa
+	$(Q) echo "INSTALL $<"
+	$(Q) $(NWLINK) install-nwa $<
+
+$(TARGET).nwa: all
 #---------------------------------------------------------------------------------
-
-# .PHONY: run
-# run: $(BUILD)/$(TARGET).nwa
-# 	@echo "INSTALL $<"
-# 	$(Q) $(NWLINK) install-nwa $<
-
-
-# .PRECIOUS: $(BUILD)
-# $(BUILD)/source:
-# 	mkdir -p $@
 
 else
 
