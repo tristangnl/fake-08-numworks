@@ -23,6 +23,7 @@ LTO := 1
 
 COMMON_FLAGS := $(shell $(NWLINK) eadk-cflags-device)
 COMMON_FLAGS += -Os -Wall
+COMMON_FLAGS += -D_NUMWORKS
 
 LDFLAGS := -Wl,--relocatable
 LDFLAGS += -nostartfiles
@@ -47,7 +48,7 @@ CFLAGS := -std=c99
 CFLAGS += -ggdb
 CFLAGS += $(COMMON_FLAGS)
 
-CXXFLAGS := -std=gnu++17 -fno-exceptions -fno-rtti
+CXXFLAGS := -std=gnu++17 -fno-exceptions -fno-rtti -fpermissive
 CXXFLAGS += $(COMMON_FLAGS)
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -58,7 +59,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
 
 #export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
