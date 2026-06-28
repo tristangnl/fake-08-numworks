@@ -23,7 +23,7 @@ LTO := 1
 
 COMMON_FLAGS := $(shell $(NWLINK) eadk-cflags-device)
 COMMON_FLAGS += -Os -Wall
-COMMON_FLAGS += -D_NUMWORKS -DMINIZ_NO_TIME
+COMMON_FLAGS += -D_NUMWORKS -DMINIZ_NO_TIME -DVER_STR=\"$(APP_VERSION)\"
 
 LDFLAGS := -Wl,--relocatable
 LDFLAGS += -nostartfiles
@@ -57,6 +57,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export TOPDIR := $(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
 
@@ -137,7 +138,7 @@ $(TARGET).nwa: $(OFILES_SOURCES) icon.o
 	@echo "CC      $^"
 	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-icon.o: source/icon.png
+icon.o: $(TOPDIR)/source/icon.png
 	@echo "ICON    $<"
 	$(Q) $(NWLINK) png-icon-o $< $@
 
