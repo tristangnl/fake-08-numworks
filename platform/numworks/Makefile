@@ -25,8 +25,7 @@ COMMON_FLAGS := $(shell $(NWLINK) eadk-cflags-device)
 COMMON_FLAGS += -Os -Wall
 COMMON_FLAGS += -D_NUMWORKS -DMINIZ_NO_TIME -DVER_STR=\"$(APP_VERSION)\"
 
-LDFLAGS := -Wl,--relocatable
-LDFLAGS += -nostartfiles
+LDFLAGS := $(shell $(NWLINK) eadk-ldflags-device)
 LDFLAGS += --specs=nano.specs
 
 ifeq ($(LINK_GC),1)
@@ -95,8 +94,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	$(Q) echo "CLEAN"
-	$(Q) rm -fr $(BUILD) 
-#potentiellement ajouter le $(TARGET) ou comme dans 3ds, mettre target.machin
+	$(Q) rm -fr $(BUILD) $(TARGET).nwa
 #---------------------------------------------------------------------------------
 #run:
 #---------------------------------------------------------------------------------
@@ -120,15 +118,13 @@ else
 .PHONY: build
 build: $(TARGET).bin
 
-%.bin: %.nwa
+%.bin: $(TOPDIR)/$(TARGET).nwa
 	@echo "BIN     $@"
 	$(Q) $(NWLINK) nwa-bin $< $@
 
-$(TARGET).nwa: $(OFILES_SOURCES) icon.o
+$(TOPDIR)/$(TARGET).nwa: $(OFILES_SOURCES) icon.o
 	@echo "LD      $@"
-	$(Q) $(LD) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
-# 	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS)
-# 	$(Q) $(CC) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS)
+	$(Q) $(LD) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o: %.cpp
 	@echo "CXX     $<"
