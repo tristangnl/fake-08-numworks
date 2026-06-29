@@ -49,5 +49,7 @@ source/carts.zip
 platform/libretro/fake08_libretro.dylib
 platform/libretro/libs/
 platform/libretro/obj/
+platform/numworks/FAKE08.nwa
+platform/numworks/FAKE08.bin
 .DS_Store
 

@@ -26,7 +26,8 @@ COMMON_FLAGS += -Os -Wall
 COMMON_FLAGS += -D_NUMWORKS -DMINIZ_NO_TIME -DVER_STR=\"$(APP_VERSION)\"
 
 LDFLAGS := $(shell $(NWLINK) eadk-ldflags-device)
-LDFLAGS += --specs=nano.specs
+# LDFLAGS += --specs=nano.specs
+LDFLAGS += --specs=nosys.specs
 
 ifeq ($(LINK_GC),1)
 COMMON_FLAGS += -fdata-sections -ffunction-sections
@@ -93,8 +94,8 @@ $(BUILD):
 	$(Q) mkdir -p $@
 #---------------------------------------------------------------------------------
 clean:
-	$(Q) echo "CLEAN"
-	$(Q) rm -fr $(BUILD) $(TARGET).nwa
+	$(Q) echo "clean ..."
+	$(Q) rm -fr $(BUILD) $(TARGET).nwa $(TARGET).bin
 #---------------------------------------------------------------------------------
 run: $(TARGET).nwa
 	$(Q) echo "INSTALL $<"
@@ -110,27 +111,27 @@ else
 #---------------------------------------------------------------------------------
 
 .PHONY: build
-build: $(TARGET).bin
+build: $(TOPDIR)/$(TARGET).bin
 
-%.bin: $(TOPDIR)/$(TARGET).nwa
-	@echo "BIN     $@"
+$(TOPDIR)/%.bin: $(TOPDIR)/$(TARGET).nwa
+	@echo $(notdir $@)
 # 	$(Q) $(NWLINK) nwa-bin -d $(TOPDIR)/../../carts/ld45.p8 $< $@
 	$(Q) $(NWLINK) nwa-bin $< $@
 
 $(TOPDIR)/$(TARGET).nwa: $(OFILES_SOURCES) icon.o
-	@echo "LD      $@"
+	@echo "LD      $(notdir $@)"
 	$(Q) $(LD) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o: %.cpp
-	@echo "CXX     $<"
+	@echo $(notdir $^)
 	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.c
-	@echo "CC      $^"
+	@echo $(notdir $^)
 	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 icon.o: $(TOPDIR)/source/icon.png
-	@echo "ICON    $<"
+	@echo "ICON    $(notdir $<)"
 	$(Q) $(NWLINK) png-icon-o $< $@
 
 #---------------------------------------------------------------------------------------
