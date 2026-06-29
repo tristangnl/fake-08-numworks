@@ -114,6 +114,7 @@ build: $(TARGET).bin
 
 %.bin: $(TOPDIR)/$(TARGET).nwa
 	@echo "BIN     $@"
+# 	$(Q) $(NWLINK) nwa-bin -d $(TOPDIR)/../../carts/ld45.p8 $< $@
 	$(Q) $(NWLINK) nwa-bin $< $@
 
 $(TOPDIR)/$(TARGET).nwa: $(OFILES_SOURCES) icon.o
