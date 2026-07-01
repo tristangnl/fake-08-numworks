@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include <cstdint>
+#include <string.h>
 #include "../source/fontdata.h"
 
 #include "../source/stringToDataHelpers.h"
@@ -8,7 +9,7 @@
 #define BITMASK(n) (1U<<(n))
 
 TEST_CASE("checking fontdata exists") {
-    CHECK(get_font_data().length() == 15995);
+    CHECK(strlen(get_font_data()) == 15995);
 }
 
 TEST_CASE("checking defaultFontBinaryData exists") {

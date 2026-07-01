@@ -5,12 +5,12 @@
 
 #include "logger.h"
 
-void copy_string_to_sprite_memory(uint8_t sprite_data[128 * 64], std::string data) {
+void copy_string_to_sprite_memory(uint8_t sprite_data[128 * 64], const char* data) {
 	uint16_t i = 0;
 
-	for (size_t n = 0; n < data.length(); n++) {
+	for (size_t n = 0; data[n] != '\0'; n++) {
 		char buf[3] = {0};
-
+		
 		//https://pico-8.fandom.com/wiki/Memory
 		// "An 8-bit byte represents two pixels, horizontally adjacent, where the most significant 
 		// (leftmost) 4 bits is the right pixel of the pair, and the least significant 4 bits is 
@@ -30,13 +30,13 @@ void copy_string_to_sprite_memory(uint8_t sprite_data[128 * 64], std::string dat
 	}
 }
 
-void copy_mini_label_to_sprite_memory(uint8_t sprite_data[128 * 64], std::string data, int labeloffset) {
+void copy_mini_label_to_sprite_memory(uint8_t sprite_data[128 * 64], const char* data, int labeloffset) {
 	int buffcount = 0;
 	int labelx = 0;
 	int labely = 0;
 	char buf[3] = {0};
 	
-	for (size_t n = 0; n < data.length(); n++) {
+	for (size_t n = 0; n < data[n] != '\0'; n++) {
 		
 		if (data[n] > ' ') {
 			

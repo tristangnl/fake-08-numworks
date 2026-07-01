@@ -12,6 +12,7 @@ class Graphics {
 	//deprecated
 	uint8_t fontSpriteData[128 * 64];
 
+	//faire un truc là
 	PicoRam* _memory;
 
 	void copySpriteToScreen(
@@ -63,7 +64,7 @@ class Graphics {
 	void _invertedCircfill(int ox, int oy, int r, uint8_t col);
 
 	public:
-	Graphics(std::string fontdata, PicoRam* memory);
+	Graphics(const char* fontdata, PicoRam* memory);
 
 	uint8_t* GetP8FrameBuffer();
 	uint8_t* GetP8SpriteSheetBuffer();

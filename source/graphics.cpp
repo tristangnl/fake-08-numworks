@@ -22,7 +22,7 @@ using namespace std;
 using namespace z8;
 
 //call initialize to make sure defaults are correct
-Graphics::Graphics(std::string fontdata, PicoRam* memory) {
+Graphics::Graphics(const char* fontdata, PicoRam* memory) {
 	_memory = memory;
 	
 	copy_string_to_sprite_memory(fontSpriteData, fontdata);

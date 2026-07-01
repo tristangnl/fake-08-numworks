@@ -384,7 +384,7 @@ bool Cart::loadCartFromString(std::string cartStr) {
     }
 
     Logger_Write("Setting cart graphics rom data from strings\n");
-    setSpriteSheet(SpriteSheetString);
+    setSpriteSheet(SpriteSheetString.c_str());
     setSpriteFlags(SpriteFlagsString);
     setMapData(MapString);
 
@@ -560,7 +560,7 @@ void Cart::initCartRom(){
     }
 }
 
-void Cart::setSpriteSheet(std::string spritesheetstring){
+void Cart::setSpriteSheet(const char* spritesheetstring){
 	Logger_Write("Copying data to spritesheet\n");
 	copy_string_to_sprite_memory(CartRom.SpriteSheetData, spritesheetstring);
 }

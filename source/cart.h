@@ -28,7 +28,7 @@ class Cart {
 
     void initCartRom();
 
-    void setSpriteSheet(std::string spriteSheetString);
+    void setSpriteSheet(const char* spriteSheetString);
 	void setSpriteFlags(std::string spriteFlagsString);
 	void setMapData(std::string mapString);
 

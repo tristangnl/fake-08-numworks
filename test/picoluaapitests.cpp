@@ -16,7 +16,7 @@ TEST_CASE("audio stats") {
   PicoRam picoRam;
   picoRam.Reset();
   Audio* audio = new Audio(&picoRam);
-  std::string fontdata = get_font_data();
+  const char* fontdata = get_font_data();
   Graphics* graphics = new Graphics(fontdata, &picoRam);
   //audioState_t* audioState = audio->getAudioState();
   Input * input = new Input(&picoRam);
@@ -172,7 +172,7 @@ TEST_CASE("print") {
   PicoRam picoRam;
   picoRam.Reset();
   Audio* audio = new Audio(&picoRam);
-  std::string fontdata = get_font_data();
+  const char* fontdata = get_font_data();
   Graphics* graphics = new Graphics(fontdata, &picoRam);
   //audioState_t* audioState = audio->getAudioState();
   Input * input = new Input(&picoRam);
@@ -204,7 +204,7 @@ TEST_CASE("peek with large count") {
   PicoRam picoRam;
   picoRam.Reset();
   Audio* audio = new Audio(&picoRam);
-  std::string fontdata = get_font_data();
+  const char* fontdata = get_font_data();
   Graphics* graphics = new Graphics(fontdata, &picoRam);
   Input* input = new Input(&picoRam);
   StubHost* stubHost = new StubHost();

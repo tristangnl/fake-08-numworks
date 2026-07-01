@@ -1457,10 +1457,7 @@ void Vm::loadLabel(std::string filename, bool mini, int minioffset) {
     
     auto cartDir = _host->getCartDirectory();
     Cart *labelcart = new Cart(filename, cartDir);
-    std::string labelstr = labelcart->LabelString;
-    if(labelstr.length() == 0){
-        labelstr = NoLabelString;
-    }
+    const char* labelstr = labelcart->LabelString.empty() ? NoLabelString : labelcart->LabelString.c_str();
     if (mini) {
         copy_mini_label_to_sprite_memory(_memory->spriteSheetData, labelstr, minioffset);
     } else {
