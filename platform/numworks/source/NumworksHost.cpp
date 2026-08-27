@@ -6,8 +6,17 @@ using namespace std;
 #include "../../../source/hostVmShared.h"
 #include "../../../source/nibblehelpers.h"
 
-extern const char eadk_app_name[] __attribute__((section(".rodata.eadk_app_name"))) = "FAKEO8";
-extern const uint32_t eadk_api_level __attribute__((section(".rodata.eadk_api_level"))) = 0;
+extern const char eadk_app_name[]
+#if PLATFORM_DEVICE
+    __attribute__((section(".rodata.eadk_app_name")))
+#endif
+    = "FAKEO8";
+
+const uint32_t eadk_api_level
+#if PLATFORM_DEVICE
+    __attribute__((section(".rodata.eadk_api_level")))
+#endif
+    = 0;
 
 float targetFrameTimeMs;
 
