@@ -11,6 +11,7 @@ namespace EADK {
 
 class Color {
  public:
+  constexpr Color() : m_value(0) {}
   constexpr Color(uint32_t rgb)
       : m_value(((rgb & 0xF80000) >> 8) | ((rgb & 0x00FC00) >> 5) |
                 ((rgb & 0x0000F8) >> 3)) {}
@@ -527,6 +528,7 @@ static inline const char* getText(Event e) { return EventText[(int)e]; }
 namespace Timing {
 
 static inline void msleep(uint32_t ms) { return eadk_timing_msleep(ms); }
+static inline uint64_t millis() { return eadk_timing_millis(); }
 
 }  // namespace Timing
 
