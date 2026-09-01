@@ -100,7 +100,7 @@ windows:
 	@$(MAKE) -C platform/windows
 
 numworks:
-	@$(MAKE) -C platform/numworks
+	@$(MAKE) -C platform/numworks $(if $(EXTERNAL_DATA),EXTERNAL_DATA=$(abspath $(EXTERNAL_DATA)))
 
 clean-tests:
 	@$(MAKE) -C test clean

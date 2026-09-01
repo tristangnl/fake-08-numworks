@@ -30,6 +30,13 @@ INCLUDES	:=	${INCLUDES}
 Q ?= @
 NWLINK := npx --yes -- nwlink@0.0.19
 
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+
+export OFILES_SOURCES 	:=	$(addprefix $(BUILD)/,$(CPPFILES:.cpp=.o) $(CFILES:.c=.o)) #$(SFILES:.s=.o)
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+			-I$(CURDIR)/$(BUILD)
+
 ifeq ($(PLATFORM),device)
   CXX := arm-none-eabi-g++
   CC = $(CXX)
@@ -43,14 +50,20 @@ else
   LTO := 0
 endif
 
+# Avoid unnecessary nwlink queries
+ifdef APP_TITLE
 COMMON_FLAGS := $(shell $(NWLINK) eadk-cflags-$(PLATFORM)) -MMD -MP
+endif
 COMMON_FLAGS += -Wall -ggdb
 COMMON_FLAGS += -DMINIZ_NO_TIME -DVER_STR=\"$(APP_VERSION)\"
 ifeq ($(PLATFORM),device)
 	COMMON_FLAGS += -D_NUMWORKS
 endif
 
+# Avoid unnecessary nwlink queries
+ifdef APP_TITLE
 LDFLAGS := $(shell $(NWLINK) eadk-ldflags-$(PLATFORM))
+endif
 ifeq ($(PLATFORM),device)
 # LDFLAGS += --specs=nano.specs
 LDFLAGS += --specs=nosys.specs # Alternatively, use full-fledged newlib
@@ -86,118 +99,109 @@ else
 endif
 
 #---------------------------------------------------------------------------------
-# no real need to edit anything past this point unless you need to add additional
-# rules for different file extensions
+# External Data
 #---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
-#---------------------------------------------------------------------------------
+ifdef EXTERNAL_DATA
+  ifeq ($(PLATFORM),device)
+    EXTERNAL_DATA_INPUT = --external-data $(EXTERNAL_DATA)
+  else
+    EXTERNAL_DATA_INPUT = --nwb-external-data $(EXTERNAL_DATA)
+  endif
+else
+  EXTERNAL_DATA =
+  EXTERNAL_DATA_INPUT =
+endif
 
+#---------------------------------------------------------------------------------
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
-export TOPDIR := $(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
 
 #export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
-CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(CPPFILES)),)
-#---------------------------------------------------------------------------------
 	export LD	:=	$(CC)
-#---------------------------------------------------------------------------------
 else
-#---------------------------------------------------------------------------------
 	export LD	:=	$(CXX)
-#---------------------------------------------------------------------------------
 endif
-#---------------------------------------------------------------------------------
-
-export OFILES_SOURCES 	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) #$(SFILES:.s=.o)
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-			-I$(CURDIR)/$(BUILD)
-
-.PHONY: all run clean
 
 #---------------------------------------------------------------------------------
-all: $(BUILD)
-	$(Q) $(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+# Targets
+#---------------------------------------------------------------------------------
+.PHONY: build run clean debug
+
+# Allows to execute make from either the root directory ("make numworks") or the platform/numworks directory
+ifndef APP_TITLE
+build: $(BUILD)
+	$(Q) $(MAKE) -C ../.. numworks $(if $(EXTERNAL_DATA),EXTERNAL_DATA=$(abspath $(EXTERNAL_DATA)))
+
+$(TARGET).nwa $(TARGET).nwb: build
+else
+
+ifeq ($(PLATFORM),device)
+
+build: $(BUILD) $(TARGET).bin
+
+%.bin: $(TARGET).nwa $(EXTERNAL_DATA)
+	@echo $(notdir $@)
+	$(Q) $(NWLINK) nwa-bin $(EXTERNAL_DATA_INPUT) $< $@
+
+$(TARGET).nwa: $(OFILES_SOURCES) $(BUILD)/icon.o
+	@echo "LD      $(notdir $@)"
+	$(Q) $(LD) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+else 
+
+build: $(BUILD) $(TARGET).nwb
+
+$(TARGET).nwb: $(OFILES_SOURCES) $(LINUX_SIMULATOR_PATH)
+	@echo "LD      $(notdir $@)"
+	$(Q) $(LD) $(CXXFLAGS) $(LDFLAGS) $(OFILES_SOURCES) -o $@
+
+endif
+
+endif
 
 $(BUILD):
 	$(Q) mkdir -p $@
-#---------------------------------------------------------------------------------
-clean:
-	$(Q) echo "clean ..."
-	$(Q) rm -fr build-* $(TARGET).nwa $(TARGET).nwb $(TARGET).bin pico.log
-#---------------------------------------------------------------------------------
-ifeq ($(PLATFORM),device)
-run: $(TARGET).nwa
-	$(Q) echo "INSTALL $<"
-	$(Q) $(NWLINK) install-nwa $<
 
-$(TARGET).nwa: all
+clean:
+	@echo "clean ..."
+	$(Q) rm -fr build-* $(TARGET).nwa $(TARGET).nwb $(TARGET).bin pico.log
+
+ifeq ($(PLATFORM),device)
+run: $(TARGET).nwa $(EXTERNAL_DATA)
+	@echo "INSTALL $<"
+	$(Q) $(NWLINK) install-nwa $(EXTERNAL_DATA_INPUT) $<
+
+debug:
+	@echo "Debugging is only supported with PLATFORM=simulator."; \
+
 else
-run: $(TARGET).nwb $(LINUX_SIMULATOR_PATH)
-	$(Q) echo "RUN     $<"
-	$(Q) $(LINUX_SIMULATOR_PATH) --nwb ./$<
+run: $(TARGET).nwb $(LINUX_SIMULATOR_PATH) $(EXTERNAL_DATA)
+	@echo "RUN     $<"
+	$(Q) $(LINUX_SIMULATOR_PATH) --nwb ./$< $(EXTERNAL_DATA_INPUT)
 
 .PHONY: debug
-debug: $(TARGET).nwb $(LINUX_SIMULATOR_PATH)
+debug: $(TARGET).nwb $(LINUX_SIMULATOR_PATH) $(EXTERNAL_DATA)
 	@echo "DEBUG   $<"
-	$(Q) $(GDB) $(LINUX_SIMULATOR_PATH) --nwb ./$<
-
-$(TARGET).nwb: all
-endif
-#---------------------------------------------------------------------------------
-
-else
-
-#---------------------------------------------------------------------------------
-# main targets
-#---------------------------------------------------------------------------------
-
-.PHONY: build
-ifeq ($(PLATFORM),device)
-
-build: $(TOPDIR)/$(TARGET).bin
-
-$(TOPDIR)/%.bin: $(TOPDIR)/$(TARGET).nwa
-	@echo $(notdir $@)
-# 	$(Q) $(NWLINK) nwa-bin -d $(TOPDIR)/../../carts/ld45.p8 $< $@
-	$(Q) $(NWLINK) nwa-bin $< $@
-
-$(TOPDIR)/$(TARGET).nwa: $(OFILES_SOURCES) icon.o
-	@echo "LD      $(notdir $@)"
-	$(Q) $(LD) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
-
-else
-
-build: $(TOPDIR)/$(TARGET).nwb
-
-$(TOPDIR)/$(TARGET).nwb: $(OFILES_SOURCES) $(TOPDIR)/$(LINUX_SIMULATOR_PATH)
-	@echo "LD      $(notdir $@)"
-	$(Q) $(LD) $(CXXFLAGS) $(LDFLAGS) $(OFILES_SOURCES) -o $@
+	$(Q) $(GDB) $(LINUX_SIMULATOR_PATH) --nwb ./$< $(EXTERNAL_DATA_INPUT)
 
 endif
 
 DEPS := $(OFILES_SOURCES:.o=.d)
 -include $(DEPS)
 
-%.o: %.cpp
+$(BUILD)/%.o: %.cpp
 	@echo $(notdir $^)
 	$(Q) $(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-%.o: %.c
+$(BUILD)/%.o: %.c
 	@echo $(notdir $^)
 	$(Q) $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-icon.o: $(TOPDIR)/$(APP_ICON)
+$(BUILD)/icon.o: $(APP_ICON)
 	@echo "ICON    $(notdir $<)"
 	$(Q) $(NWLINK) png-icon-o $< $@
-
-#---------------------------------------------------------------------------------------
-endif
-#---------------------------------------------------------------------------------------
