@@ -79,7 +79,7 @@ LDFLAGS += -Wl,--gc-sections
 endif
 
 ifeq ($(LTO),1)
-COMMON_FLAGS += -flto -fno-fat-lto-objects
+COMMON_FLAGS += -flto=auto -fno-fat-lto-objects
 COMMON_FLAGS += -fwhole-program
 COMMON_FLAGS += -fvisibility=internal
 LDFLAGS += -flinker-output=nolto-rel
