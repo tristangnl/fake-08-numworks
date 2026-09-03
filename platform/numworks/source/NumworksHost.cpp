@@ -194,7 +194,7 @@ void Host::drawFrame(uint8_t* picoFb, uint8_t* screenPaletteMap, uint8_t drawMod
     
     if(stretch==PixelPerfect){
         // Native resolution (128x128)
-        #pragma unroll 40
+        #pragma unroll 64
         for (int y = 0; y < PicoScreenSideWidth; y++) {
             for (int x = 0; x < PicoScreenSideWidth; x++) {
                 pico_line_buffer[x] = _mapped16BitColors[screenPaletteMap[getPixelNibble(x, y, picoFb)] & 0x8f];
@@ -204,7 +204,7 @@ void Host::drawFrame(uint8_t* picoFb, uint8_t* screenPaletteMap, uint8_t drawMod
     }
     else if (stretch==PixelPerfectStretch){
     //Native resolution x2 (256x256), cropped to 256x240 (8 px border on the top and 8 px on the bottom)
-    #pragma unroll 40
+    #pragma unroll 64
         for (int y = 4; y < PicoScreenSideWidth-4; y++) {
             for (int x = 0; x < PicoScreenSideWidth; x++) {
                 EADK::Color color = _mapped16BitColors[screenPaletteMap[getPixelNibble(x, y, picoFb)] & 0x8f];
@@ -218,7 +218,7 @@ void Host::drawFrame(uint8_t* picoFb, uint8_t* screenPaletteMap, uint8_t drawMod
     else if (stretch==StretchToFit){
         // Nearest neighbor scaling of a 128x128 texture to a 240x240 resolution (to keep the ratio)
         // Horizontally, we multiply by 1.875 (128*1.875 = 240)
-        #pragma unroll 40
+        #pragma unroll 64
         for (int y = 0; y < PicoScreenSideWidth; y++) {
             for (int x = 0; x < PicoScreenSideWidth; x++) {
                 EADK::Color color = _mapped16BitColors[screenPaletteMap[getPixelNibble(x, y, picoFb)] & 0x8f];
@@ -240,7 +240,7 @@ void Host::drawFrame(uint8_t* picoFb, uint8_t* screenPaletteMap, uint8_t drawMod
     else{
         // Nearest neighbor scaling of a 128x128 texture to a 320x240 resolution
         // Horizontally, we want to scale by a 5/2 ratio. So we need to color 5 pixels out of 2:  we triple 1 pixel and we double 1 pixel out of 2 pixels.
-        #pragma unroll 40
+        #pragma unroll 64
         for (int y=0; y<PicoScreenSideWidth; y++) {
             for (int x = 0; x < PicoScreenSideWidth; x++) {
                 EADK::Color color = _mapped16BitColors[screenPaletteMap[getPixelNibble(x, y, picoFb)] & 0x8f];
